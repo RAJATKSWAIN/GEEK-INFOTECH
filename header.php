@@ -39,8 +39,8 @@
                         <li class="dropdown simple-menu">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">📚 Courses <i class="fa fa-angle-down"></i></a>
                             <ul class="dropdown-menu">
-                                <li><a href="bca.php">Backend Development Courses</a></li>
-                                <li><a href="bse.php">Data Engineering Courses</a></li>
+                                <li><a href="backend_Development.php">Backend Development Courses</a></li>
+                                <li><a href="data_Engineering.php">Data Engineering Courses</a></li>
                             </ul>
                         </li>
                         <li class="dropdown simple-menu">
