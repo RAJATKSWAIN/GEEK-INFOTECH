@@ -1,0 +1,137 @@
+name: "🚀 GEEK INFOTECH WEBSITE | CI/CD Production Pipeline"
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+
+  build-test-deploy:
+    name: "CI/CD Pipeline - Geek Infotech Website"
+    runs-on: ubuntu-latest
+
+    steps:
+
+    # ======================================
+    # 1️⃣ CHECKOUT CODE
+    # ======================================
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+
+
+    # ======================================
+    # 2️⃣ SETUP NODE FOR MINIFICATION
+    # ======================================
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+
+    # ======================================
+    # 3️⃣ INSTALL MINIFICATION TOOLS
+    # ======================================
+    - name: 📦 Install Minification Tools
+      run: |
+        npm install -g clean-css-cli uglify-js
+
+
+    # ======================================
+    # 4️⃣ CSS MINIFICATION
+    # ======================================
+    - name: 🎨 Minify CSS
+      run: |
+        find . -type f -name "*.css" ! -name "*.min.css" -exec sh -c '
+          for file do
+            cleancss -o "${file%.css}.min.css" "$file"
+          done
+        ' sh {} +
+
+
+    # ======================================
+    # 5️⃣ JS MINIFICATION
+    # ======================================
+    - name: ⚡ Minify JavaScript
+      run: |
+        find . -type f -name "*.js" ! -name "*.min.js" -exec sh -c '
+          for file do
+            uglifyjs "$file" -o "${file%.js}.min.js"
+          done
+        ' sh {} +
+
+
+    # ======================================
+    # 6️⃣ PHP SYNTAX CHECK
+    # ======================================
+    - name: 🔍 PHP Lint Validation
+      run: |
+        echo "Scanning PHP files..."
+        find . -type f -name "*.php" -exec php -l {} \;
+
+
+    # ======================================
+    # 7️⃣ SECURITY SCAN
+    # ======================================
+    - name: 🔐 Security Scan (Secrets Detection)
+      uses: gitleaks/gitleaks-action@v2
+
+
+    # ======================================
+    # 8️⃣ AUTO VERSION TAG
+    # ======================================
+    - name: 🏷️ Auto Version Tag
+      id: tag
+      run: |
+        VERSION="v$(date +'%Y.%m.%d').${GITHUB_RUN_NUMBER}"
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: 🔖 Create Git Tag
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git tag $VERSION
+        git push origin $VERSION
+
+
+    # ======================================
+    # 9️⃣ DEPLOY TO INFINITYFREE
+    # ======================================
+    - name: 📦 FTP Deploy
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: ${{ secrets.FTP_DIR }}
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          README.md
+          .github/**
+
+
+    # ======================================
+    # 🔟 SUCCESS SUMMARY
+    # ======================================
+    - name: 🏆 Deployment Success
+      if: success()
+      run: |
+        echo "### 🚀 Geek Infotech Website Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+        echo "- **Organization:** Geek Infotech" >> $GITHUB_STEP_SUMMARY
+        echo "- **Developed By:** TrinityWebEdge" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version:** $VERSION" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status:** ✅ Production Ready" >> $GITHUB_STEP_SUMMARY
+
+
+    # ======================================
+    # FAILURE ALERT
+    # ======================================
+    - name: ⚠️ Deployment Failure
+      if: failure()
+      run: |
+        echo "❌ Deployment Failed. Check pipeline logs."
