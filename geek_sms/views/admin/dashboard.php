@@ -15,7 +15,7 @@ require_once SYS_ROOT . 'core/session.php';
 Session::protect(['ADMIN']);
 
 // 2. DATA FETCHING: Get users awaiting authorization (Maker-Checker Logic)
-$stmt = db()->prepare("SELECT USER_ID, USERNAME, ROLE, CREATED_AT FROM GIAMS_MST_USERS WHERE IS_ACTIVE = 0");
+$stmt = db()->prepare("SELECT USER_ID, USERNAME, ROLE, MAKER_DATE  FROM GIAMS_MST_USERS WHERE IS_ACTIVE = 0");
 $stmt->execute();
 $pendingUsers = $stmt->fetchAll();
 ?>
