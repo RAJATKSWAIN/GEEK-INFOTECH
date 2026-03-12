@@ -3,6 +3,8 @@
  * VIEW: Admin Dashboard (Geek Infotech SMS)
  * PURPOSE: Advanced Management Console
  */
+error_reporting(E_ALL);   // Report all errors
+ini_set('display_errors', 1);  // Show errors in browser
 
 require_once '../../core/config.php';
 require_once SYS_ROOT . 'core/session.php';
