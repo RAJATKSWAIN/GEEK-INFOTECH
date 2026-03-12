@@ -20,11 +20,11 @@ $studentStmt = db()->query("SELECT COUNT(*) FROM GIAMS_MST_STUDENTS");
 $totalStudents = $studentStmt->fetchColumn();
 
 // Get Active Courses
-$courseStmt = db()->query("SELECT COUNT(*) FROM GIAMS_MST_COURSES WHERE IS_ACTIVE = 1");
-$totalCourses = $courseStmt->fetchColumn();
+//$courseStmt = db()->query("SELECT COUNT(*) FROM GIAMS_MST_COURSES WHERE IS_ACTIVE = 1");
+//$totalCourses = $courseStmt->fetchColumn();
 
 // Fetch Pending Authorization List
-$listStmt = db()->prepare("SELECT USER_ID, USERNAME, ROLE, CREATED_AT FROM GIAMS_MST_USERS WHERE IS_ACTIVE = 0 LIMIT 5");
+$listStmt = db()->prepare("SELECT USER_ID, USERNAME, ROLE, MAKER_DATE FROM GIAMS_MST_USERS WHERE IS_ACTIVE = 0 LIMIT 5");
 $listStmt->execute();
 $pendingUsers = $listStmt->fetchAll();
 ?>
