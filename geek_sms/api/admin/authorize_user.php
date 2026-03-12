@@ -1,54 +1,62 @@
 <?php
 /**
- * GEEK-INFOTECH-SMS Authorization API
+ * GEEK-INFOTECH-AMS Authorization API
  * Implements the "Checker" part of Maker-Checker
+ * API: Authorize User
+ * PURPOSE: Implements Maker-Checker authorization logic for user accounts.
  */
 
+// --- SECTION 1: LOAD CORE ---
 require_once __DIR__ . '/../../core/config.php';
-require_once __DIR__ . '/../../core/session.php';
+require_once SYS_ROOT . 'core/session.php';
 
-// 1. Military-Grade Protection: Only logged-in Admins can call this API
+// --- SECTION 2: SECURITY GATE ---
+// Ensure only logged-in Admins can access this script
 Session::protect(['ADMIN']);
 
-$db = db();
+
+// --- SECTION 3: INPUT VALIDATION ---
 $targetUserId = $_GET['id'] ?? null;
-$currentAdminStaffId = $_SESSION['staff_id'];
+$currentAdminStaffId = $_SESSION['staff_id']; // The person doing the 'Checking'
 
 if (!$targetUserId) {
-    header("Location: ../../views/admin/dashboard.php?error=invalid_id");
+    header("Location: " . url('views/admin/dashboard.php?error=invalid_id'));
     exit();
 }
 
+
+// --- SECTION 4: EXECUTE AUTHORIZATION ---
 try {
     /**
-     * 2. Execute the Authorization
-     * The SQL will fail if MAKER_ID == AUTH_ID due to our DB Check Constraint
+     * The DB constraint CHK_MAKER_CHECKER_DIFF will trigger 
+     * if the person trying to approve (AUTH_ID) is the same person who created (MAKER_ID).
      */
-    $sql = "UPDATE GSMS_MST_USERS 
+    $sql = "UPDATE GIAMS_MST_USERS 
             SET AUTH_ID = :auth_id, 
                 AUTH_DATE = NOW(), 
                 IS_ACTIVE = 1 
             WHERE USER_ID = :user_id";
     
-    $stmt = $db->prepare($sql);
+    $stmt = db()->prepare($sql);
     $stmt->execute([
         ':auth_id' => $currentAdminStaffId,
         ':user_id' => $targetUserId
     ]);
 
-    // 3. Success Redirect
-    header("Location: ../../views/admin/dashboard.php?msg=authorized");
+    // Redirect on Success
+    header("Location: " . url('views/admin/dashboard.php?msg=authorized'));
     exit();
 
 } catch (PDOException $e) {
     /**
-     * 4. Constraint Violation Handling
-     * If the DB returns a Check Constraint error (MAKER_ID <> AUTH_ID)
+     * SECTION 5: ERROR HANDLING
+     * Catching the specific Check Constraint violation (Self-Authorization)
      */
     if ($e->getCode() == 'HY000' || strpos($e->getMessage(), 'CHK_MAKER_CHECKER_DIFF') !== false) {
-        header("Location: ../../views/admin/dashboard.php?error=self_auth_violation");
+        header("Location: " . url('views/admin/dashboard.php?error=self_auth_violation'));
     } else {
-        header("Location: ../../views/admin/dashboard.php?error=db_error");
+        error_log("Authorization API Error: " . $e->getMessage());
+        header("Location: " . url('views/admin/dashboard.php?error=db_error'));
     }
     exit();
 }
