@@ -1,0 +1,1 @@
+function initGIAMSCharts(){ return true; }

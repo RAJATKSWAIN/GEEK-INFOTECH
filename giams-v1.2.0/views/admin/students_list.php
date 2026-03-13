@@ -1,0 +1,2 @@
+<?php require_once __DIR__ . '/../../core/config.php'; require_once SYS_ROOT . 'core/session.php'; Session::protect(['ADMIN']); $rows = db()->query('SELECT ADMISSION_NO,FULL_NAME,IS_ACTIVE FROM GIAMS_MST_STUDENTS ORDER BY STUDENT_ID DESC LIMIT 100')->fetchAll(); ?>
+<table border="1"><tr><th>Admission</th><th>Name</th><th>Status</th></tr><?php foreach($rows as $r): ?><tr><td><?= htmlspecialchars($r['ADMISSION_NO']) ?></td><td><?= htmlspecialchars($r['FULL_NAME']) ?></td><td><?= $r['IS_ACTIVE']?'ACTIVE':'PENDING' ?></td></tr><?php endforeach; ?></table>
